@@ -2,8 +2,9 @@
 
 This repository contains the **training code** for the manuscript:
 
-> *Physics-informed dual-branch graph neural network for formation energy
-> prediction of antimony-based phase-change alloys with limited data.*
+> *Predicting Thermodynamic Stability of Sb-Based Binary Alloys via a
+> Physics-Informed Dual-Branch Graph Neural Network with Transfer Learning*
+> (submitted to Journal of Non-Crystalline Solids)
 
 ## Model
 
@@ -20,9 +21,15 @@ Fusion: 128 → 64 → 1. Dropout 0.3.
 
 | Mode     | Trainable params |
 |----------|-----------------:|
+| `dual`   | **85,121**       |
 | `gnn`    | 75,521           |
 | `physics`| 9,857            |
-| `dual`   | **85,121**       |
+
+Branch-level breakdown of the `dual` model (the convention used in the
+manuscript): structural branch 71,168 + physics branch 5,504 + fusion head
+(128→64→1) 8,449 = 85,121. The standalone `gnn` / `physics` variants attach
+their own 64-dimensional prediction head (64→64→1, 4,353 params), which is
+why the smoke test prints 75,521 and 9,857 for them.
 
 ## Two-stage transfer learning
 
@@ -86,8 +93,12 @@ python scripts/train.py --data-dir $DATA_DIR --stage finetune --mode dual \
     --pretrained checkpoints/pretrained_dual.pt
 ```
 
-LOEO / LOOCV loops reuse the same `src.trainer.finetune` function; see
-`finetune_with_loeo` in the paper's training history for the per-fold wrapper.
+The LOEO / LOOCV evaluation loops are thin per-fold wrappers around
+`src.trainer.finetune` (one held-out element or compound per fold, with
+feature normalization fitted on the training fold only). These evaluation
+wrappers are not included in this repository; the released code covers data
+preprocessing, descriptor construction, model architecture, and the
+two-stage transfer-learning training pipeline described in the manuscript.
 
 ## Notes
 
